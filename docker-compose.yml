@@ -1,4 +1,4 @@
-version: '3'
+version: '1'
 services:
 #-------------------------------------------------------------------------
   # SERVICIO LABEL STUDIO 
@@ -10,7 +10,10 @@ services:
     container_name: kclabel-studio
     # REDIRECCIÓN DE PUERTOS
     ports:
-      - 8282:82     
+      - 8181:80  
+    # SERVICIOS QUE TIENEN QUE ARRANCAR ANTES DE ARRANCAR ESTE
+    depends_on:
+     - kripme   
 
  #-------------------------------------------------------------------------
   # SERVICIO RIPME 
@@ -23,7 +26,13 @@ services:
     volumes:
     # DOCKER VOLUME
           - ./data:/app/rips/
-       
+
+
+#DEFINICION DE VOLUMENES DOCKER A USAR POR LOS SERVICIOS (OPCIONAL)
+volumes:
+  data:
+    # TIPO DE DRIVER
+    driver: local    
 
   #-------------------------------------------------------------------------
   # SERVICIO SERVIDOR WEB (php:7.4-apache con mysqli y código WP descargado
