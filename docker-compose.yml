@@ -1,4 +1,4 @@
-version: '1'
+version: '2'
 services:
 #-------------------------------------------------------------------------
   # SERVICIO LABEL STUDIO 
@@ -8,12 +8,17 @@ services:
     image: anages20/kclabel-studio:1.0
     # NOMBRE QUE LE VOY A DAR AL CONTENEDOR
     container_name: kclabel-studio
-    # REDIRECCIÓN DE PUERTOS
+    # REDIRECCION DE PUERTOS
     ports:
       - 8181:80  
     # SERVICIOS QUE TIENEN QUE ARRANCAR ANTES DE ARRANCAR ESTE
     depends_on:
      - kripme   
+    volumes:
+    # DOCKER VOLUME
+            - data:/app/rips/
+    networks:
+      - ejemplo
 
  #-------------------------------------------------------------------------
   # SERVICIO RIPME 
@@ -25,7 +30,9 @@ services:
     container_name: kcripme
     volumes:
     # DOCKER VOLUME
-          - ./data:/app/rips/
+          - data:/app/rips/
+    networks:
+      - ejemplo
 
 
 #DEFINICION DE VOLUMENES DOCKER A USAR POR LOS SERVICIOS (OPCIONAL)
@@ -33,6 +40,17 @@ volumes:
   data:
     # TIPO DE DRIVER
     driver: local    
+
+#DEFINICIÓN DE LAS REDES A USAR POR LOS SERVICIOS (OPCIONAL)
+networks:
+  # NOMBRE DE LA RED
+  ejemplo:
+    # DRIVER DE LA RED
+    driver: bridge
+    ipam:
+      driver: default
+      config:         
+        - subnet: 192.168.1.0/24
 
   #-------------------------------------------------------------------------
   # SERVICIO SERVIDOR WEB (php:7.4-apache con mysqli y código WP descargado
@@ -84,14 +102,3 @@ volumes:
 #  data:
 #    # TIPO DE DRIVER
 #    driver: local
-
-# DEFINICIÓN DE LAS REDES A USAR POR LOS SERVICIOS (OPCIONAL)
-#networks:
-#  # NOMBRE DE LA RED
-#  ejemplo:
-#    # DRIVER DE LA RED
-#    driver: bridge
-#    ipam:
-#      driver: default
-#      config:         
-#        - subnet: 172.20.0.0/16
