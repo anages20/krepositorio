@@ -1,0 +1,127 @@
+version: "3.9"
+
+services:
+
+  filebrowser:
+      image: hurlenko/filebrowser
+      user: "${FILEBROWSER_UID}:${FILEBROWSER_GID}"
+      ports:
+        - 3055:8080
+      volumes:
+        - ./vault:/data
+        - ./fliebrowser/CONFIG_DIR:/config
+      environment:
+        - FB_BASEURL=/filebrowser
+      restart: always
+
+  nginx:
+    build: .
+    image: heartexlabs/label-studio:latest
+    ports:
+      - "8080:8085"
+      - "8081:8086"
+    depends_on:
+      - app
+    environment:
+      - LABEL_STUDIO_HOST=${LABEL_STUDIO_HOST:-}
+#   Optional: Specify SSL termination certificate & key
+#   Just drop your cert.pem and cert.key into folder 'deploy/nginx/certs'
+#      - NGINX_SSL_CERT=/certs/cert.pem
+#      - NGINX_SSL_CERT_KEY=/certs/cert.key
+    volumes:
+      - ./mydata:/label-studio/data:rw
+      - ./deploy/nginx/certs:/certs:ro
+#   Optional: Override nginx default conf
+#      - ./deploy/nginx/default.conf:/label-studio/deploy/nginx/default.conf
+    command: nginx
+    restart: always
+
+  app:
+    stdin_open: true
+    tty: true
+    build: .
+    image: heartexlabs/label-studio:latest
+    expose:
+      - "8000"
+    depends_on:
+      - db
+    environment:
+      - DJANGO_DB=default
+      - POSTGRE_NAME=postgres
+      - POSTGRE_USER=postgres
+      - POSTGRE_PASSWORD=
+      - POSTGRE_PORT=5432
+      - POSTGRE_HOST=db
+      - LABEL_STUDIO_HOST=${LABEL_STUDIO_HOST:-}
+      - JSON_LOG=1
+      - LABEL_STUDIO_DISABLE_SIGNUP_WITHOUT_LINK=true
+      - LABEL_STUDIO_USERNAME=admin@email.com
+      - LABEL_STUDIO_PASSWORD=Intangibles2021
+      - LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+      - LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/label-studio/files
+#      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./mydata:/label-studio/data:rw
+      - ./vault/datasets:/label-studio/files:rw
+      - ./vault/datasets/dt1:/label-studio/files/dt1:rw
+      - ./vault/datasets/dt2:/label-studio/files/dt2:rw
+      - ./vault/datasets/dt3:/label-studio/files/dt3:rw
+      - ./vault/datasets/dt4:/label-studio/files/dt4:rw
+      - ./vault/datasets/dt5:/label-studio/files/dt5:rw
+      - ./vault/datasets/dt6:/label-studio/files/dt6:rw
+      - ./vault/datasets/dt7:/label-studio/files/dt7:rw
+      - ./vault/datasets/dt8:/label-studio/files/dt8:rw
+      - ./vault/datasets/dt9:/label-studio/files/dt9:rw
+      - ./vault/datasets/dt10:/label-studio/files/dt10:rw
+    command: label-studio-uwsgi
+    restart: always
+
+  db:
+    image: postgres:11.5
+    hostname: db
+    restart: always
+    # Optional: Enable TLS on PostgreSQL
+    # Just drop your server.crt and server.key into folder 'deploy/pgsql/certs'
+    # NOTE: Both files must have permissions u=rw (0600) or less
+#    command: >
+#      -c ssl=on
+#      -c ssl_cert_file=/var/lib/postgresql/certs/server.crt
+#      -c ssl_key_file=/var/lib/postgresql/certs/server.key
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - ${POSTGRES_DATA_DIR:-./postgres-data}:/var/lib/postgresql/data
+      - ./deploy/pgsql/certs:/var/lib/postgresql/certs:ro
+
+
+  compute:
+    image: jupyter/all-spark-notebook
+    container_name: compute
+    user: root
+    hostname: compute
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+      CHOWN_HOME: "yes"
+      CHOWN_HOME_OPTS: "-R"
+      SPARK_OPTS: "--master=local[2] --driver-memory=8g"
+      GRANT_SUDO: "yes"
+    volumes:
+      - ./volumes/compute:/home/jovyan/
+      - ./vault:/home/jovyan/vault/
+    ports:
+      - "3011:8888"
+      - "3012:4040"
+      - "3013:4041"
+      - "3014:4042"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: "start-notebook.sh --NotebookApp.token='Universidad2023' --NotebookApp.password=''"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+        reservations:
+          memory: 4g
+volumes:
+  static: {}
