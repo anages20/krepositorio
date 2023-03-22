@@ -10,15 +10,13 @@ services:
     container_name: kclabel-studio
     # REDIRECCION DE PUERTOS
     ports:
-      - 8181:80  
-    # SERVICIOS QUE TIENEN QUE ARRANCAR ANTES DE ARRANCAR ESTE
-    depends_on:
-     - kripme   
+      - 8081:8080  
+    # SERVICIOS QUE TIENEN QUE ARRANCAR ANTES DE ARRANCAR ESTE  
     volumes:
     # DOCKER VOLUME
             - data:/app/rips/
-    networks:
-      - ejemplo
+#    networks:
+#      - ejemplo
 
  #-------------------------------------------------------------------------
   # SERVICIO RIPME 
@@ -31,8 +29,8 @@ services:
     volumes:
     # DOCKER VOLUME
           - data:/app/rips/
-    networks:
-      - ejemplo
+#    networks:
+#      - ejemplo
 
 
 #DEFINICION DE VOLUMENES DOCKER A USAR POR LOS SERVICIOS (OPCIONAL)
@@ -42,15 +40,15 @@ volumes:
     driver: local    
 
 #DEFINICIÓN DE LAS REDES A USAR POR LOS SERVICIOS (OPCIONAL)
-networks:
+#networks:
   # NOMBRE DE LA RED
-  ejemplo:
+#  ejemplo:
     # DRIVER DE LA RED
-    driver: bridge
-    ipam:
-      driver: default
-      config:         
-        - subnet: 192.168.1.0/24
+#    driver: bridge
+#    ipam:
+#      driver: default
+#      config:         
+#        - subnet: 192.168.1.0/24
 
   #-------------------------------------------------------------------------
   # SERVICIO SERVIDOR WEB (php:7.4-apache con mysqli y código WP descargado
